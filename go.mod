@@ -1,4 +1,4 @@
-module github.com/dghubble/oauth1
+module github.com/rayark/oauth1
 
 go 1.17
 
