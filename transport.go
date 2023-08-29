@@ -5,6 +5,10 @@ import (
 	"net/http"
 )
 
+type Auther interface {
+	SetRequestAuthHeader(req *http.Request, accessToken *Token) error
+}
+
 // Transport is an http.RoundTripper which makes OAuth1 HTTP requests. It
 // wraps a base RoundTripper and adds an Authorization header using the
 // token from a TokenSource.
@@ -18,7 +22,7 @@ type Transport struct {
 	// source supplies the token to use when signing a request
 	source TokenSource
 	// Auther adds OAuth1 Authorization headers to requests
-	Auther *Auther
+	Auther Auther
 }
 
 // RoundTrip authorizes the request with a signed OAuth1 Authorization header

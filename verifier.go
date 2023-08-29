@@ -156,7 +156,7 @@ type HMACVerifier struct {
 // Default signer is HMAC-SHA1.
 func NewHMACVerifier(c *Config, tokenSecret string) *HMACVerifier {
 	return &HMACVerifier{
-		NewAuther(c).signer(),
+		NewDefaultAuther(c).signer(),
 		tokenSecret,
 	}
 }

@@ -9,6 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var _ Auther = &DefaultAuther{}
+
 func TestTransport(t *testing.T) {
 	const (
 		expectedToken           = "access_token"
@@ -34,7 +36,7 @@ func TestTransport(t *testing.T) {
 		ConsumerSecret: "consumer_secret",
 		Noncer:         &fixedNoncer{expectedNonce},
 	}
-	auther := &Auther{
+	auther := &DefaultAuther{
 		config: config,
 		clock:  &fixedClock{time.Unix(123456789, 0)},
 	}
@@ -68,7 +70,7 @@ func TestTransport_customBaseTransport(t *testing.T) {
 func TestTransport_nilSource(t *testing.T) {
 	tr := &Transport{
 		source: nil,
-		Auther: &Auther{
+		Auther: &DefaultAuther{
 			config: &Config{Noncer: &fixedNoncer{"any_nonce"}},
 			clock:  &fixedClock{time.Unix(123456789, 0)},
 		},
@@ -84,7 +86,7 @@ func TestTransport_nilSource(t *testing.T) {
 func TestTransport_emptySource(t *testing.T) {
 	tr := &Transport{
 		source: StaticTokenSource(nil),
-		Auther: &Auther{
+		Auther: &DefaultAuther{
 			config: &Config{Noncer: &fixedNoncer{"any_nonce"}},
 			clock:  &fixedClock{time.Unix(123456789, 0)},
 		},

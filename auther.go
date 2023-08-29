@@ -36,28 +36,28 @@ type clock interface {
 	Now() time.Time
 }
 
-// Auther adds an "OAuth" Authorization header field to requests.
-type Auther struct {
+// DefaultAuther adds an "OAuth" Authorization header field to requests.
+type DefaultAuther struct {
 	config *Config
 	clock  clock
 }
 
-// NewAuther returns a new Auther
-func NewAuther(config *Config) *Auther {
+// NewDefaultAuther returns a new DefaultAuther
+func NewDefaultAuther(config *Config) *DefaultAuther {
 	if config == nil {
 		config = &Config{}
 	}
 	if config.Noncer == nil {
 		config.Noncer = Base64Noncer{}
 	}
-	return &Auther{
+	return &DefaultAuther{
 		config: config,
 	}
 }
 
 // setRequestTokenAuthHeader adds the OAuth1 header for the request token
 // request (temporary credential) according to RFC 5849 2.1.
-func (a *Auther) setRequestTokenAuthHeader(req *http.Request) error {
+func (a *DefaultAuther) setRequestTokenAuthHeader(req *http.Request) error {
 	oauthParams := a.commonOAuthParams()
 	oauthParams[oauthCallbackParam] = a.config.CallbackURL
 	params, err := collectParameters(req, oauthParams)
@@ -79,7 +79,7 @@ func (a *Auther) setRequestTokenAuthHeader(req *http.Request) error {
 
 // setAccessTokenAuthHeader sets the OAuth1 header for the access token request
 // (token credential) according to RFC 5849 2.3.
-func (a *Auther) setAccessTokenAuthHeader(req *http.Request, requestToken, requestSecret, verifier string) error {
+func (a *DefaultAuther) setAccessTokenAuthHeader(req *http.Request, requestToken, requestSecret, verifier string) error {
 	oauthParams := a.commonOAuthParams()
 	oauthParams[oauthTokenParam] = requestToken
 	oauthParams[oauthVerifierParam] = verifier
@@ -99,7 +99,7 @@ func (a *Auther) setAccessTokenAuthHeader(req *http.Request, requestToken, reque
 
 // SetRequestAuthHeader sets the OAuth1 header for making authenticated
 // requests with an AccessToken (token credential) according to RFC 5849 3.1.
-func (a *Auther) SetRequestAuthHeader(req *http.Request, accessToken *Token) error {
+func (a *DefaultAuther) SetRequestAuthHeader(req *http.Request, accessToken *Token) error {
 	oauthParams := a.commonOAuthParams()
 	oauthParams[oauthTokenParam] = accessToken.Token
 	params, err := collectParameters(req, oauthParams)
@@ -120,7 +120,7 @@ func (a *Auther) SetRequestAuthHeader(req *http.Request, accessToken *Token) err
 // excluding the oauth_signature parameter. This includes the realm parameter
 // if it was set in the config. The realm parameter will not be included in
 // the signature base string as specified in RFC 5849 3.4.1.3.1.
-func (a *Auther) commonOAuthParams() map[string]string {
+func (a *DefaultAuther) commonOAuthParams() map[string]string {
 	params := map[string]string{
 		oauthConsumerKeyParam:     a.config.ConsumerKey,
 		oauthSignatureMethodParam: a.signer().Name(),
@@ -135,12 +135,12 @@ func (a *Auther) commonOAuthParams() map[string]string {
 }
 
 // Returns a nonce using the configured Noncer.
-func (a *Auther) nonce() string {
+func (a *DefaultAuther) nonce() string {
 	return a.config.Noncer.Nonce()
 }
 
 // Returns the Unix epoch seconds.
-func (a *Auther) epoch() int64 {
+func (a *DefaultAuther) epoch() int64 {
 	if a.clock != nil {
 		return a.clock.Now().Unix()
 	}
@@ -148,7 +148,7 @@ func (a *Auther) epoch() int64 {
 }
 
 // Returns the Config's Signer or the default Signer.
-func (a *Auther) signer() Signer {
+func (a *DefaultAuther) signer() Signer {
 	if a.config.Signer != nil {
 		return a.config.Signer
 	}
@@ -194,7 +194,7 @@ func sortParameters(params map[string]string, format string) []string {
 	return pairs
 }
 
-// collectParameters collects request parameters from the request query, OAuth
+// CollectParameters collects request parameters from the request query, OAuth
 // parameters (which should exclude oauth_signature), and the request body
 // provided the body is single part, form encoded, and the form content type
 // header is set. The returned map of collected parameter keys and values

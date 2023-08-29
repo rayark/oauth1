@@ -36,7 +36,7 @@ func TestTwitterRequestTokenAuthHeader(t *testing.T) {
 		Noncer: &fixedNoncer{expectedNonce},
 	}
 
-	auther := &Auther{config, &fixedClock{time.Unix(unixTimestamp, 0)}}
+	auther := &DefaultAuther{config, &fixedClock{time.Unix(unixTimestamp, 0)}}
 	req, err := http.NewRequest("POST", config.Endpoint.RequestTokenURL, nil)
 	assert.Nil(t, err)
 	err = auther.setRequestTokenAuthHeader(req)
@@ -74,7 +74,7 @@ func TestTwitterAccessTokenAuthHeader(t *testing.T) {
 		Noncer: &fixedNoncer{expectedNonce},
 	}
 
-	auther := &Auther{config, &fixedClock{time.Unix(unixTimestamp, 0)}}
+	auther := &DefaultAuther{config, &fixedClock{time.Unix(unixTimestamp, 0)}}
 	req, err := http.NewRequest("POST", config.Endpoint.AccessTokenURL, nil)
 	assert.Nil(t, err)
 	err = auther.setAccessTokenAuthHeader(req, expectedRequestToken, requestTokenSecret, expectedVerifier)
@@ -111,7 +111,7 @@ var twitterConfig = &Config{
 }
 
 func TestTwitterParameterString(t *testing.T) {
-	auther := &Auther{twitterConfig, &fixedClock{time.Unix(unixTimestampOfRequest, 0)}}
+	auther := &DefaultAuther{twitterConfig, &fixedClock{time.Unix(unixTimestampOfRequest, 0)}}
 	values := url.Values{}
 	values.Add("status", "Hello Ladies + Gentlemen, a signed OAuth request!")
 	// note: the reference example is old and uses api v1 in the URL
@@ -128,7 +128,7 @@ func TestTwitterParameterString(t *testing.T) {
 }
 
 func TestTwitterSignatureBase(t *testing.T) {
-	auther := &Auther{twitterConfig, &fixedClock{time.Unix(unixTimestampOfRequest, 0)}}
+	auther := &DefaultAuther{twitterConfig, &fixedClock{time.Unix(unixTimestampOfRequest, 0)}}
 	values := url.Values{}
 	values.Add("status", "Hello Ladies + Gentlemen, a signed OAuth request!")
 	// note: the reference example is old and uses api v1 in the URL
@@ -151,7 +151,7 @@ func TestTwitterRequestAuthHeader(t *testing.T) {
 	expectedSignature := PercentEncode("tnnArxj06cWHq44gCs1OSKk/jLY=")
 	expectedTimestamp := "1318622958"
 
-	auther := &Auther{twitterConfig, &fixedClock{time.Unix(unixTimestampOfRequest, 0)}}
+	auther := &DefaultAuther{twitterConfig, &fixedClock{time.Unix(unixTimestampOfRequest, 0)}}
 	values := url.Values{}
 	values.Add("status", "Hello Ladies + Gentlemen, a signed OAuth request!")
 
