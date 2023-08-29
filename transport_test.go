@@ -34,7 +34,7 @@ func TestTransport(t *testing.T) {
 		ConsumerSecret: "consumer_secret",
 		Noncer:         &fixedNoncer{expectedNonce},
 	}
-	auther := &auther{
+	auther := &Auther{
 		config: config,
 		clock:  &fixedClock{time.Unix(123456789, 0)},
 	}
@@ -68,7 +68,7 @@ func TestTransport_customBaseTransport(t *testing.T) {
 func TestTransport_nilSource(t *testing.T) {
 	tr := &Transport{
 		source: nil,
-		auther: &auther{
+		auther: &Auther{
 			config: &Config{Noncer: &fixedNoncer{"any_nonce"}},
 			clock:  &fixedClock{time.Unix(123456789, 0)},
 		},
@@ -84,7 +84,7 @@ func TestTransport_nilSource(t *testing.T) {
 func TestTransport_emptySource(t *testing.T) {
 	tr := &Transport{
 		source: StaticTokenSource(nil),
-		auther: &auther{
+		auther: &Auther{
 			config: &Config{Noncer: &fixedNoncer{"any_nonce"}},
 			clock:  &fixedClock{time.Unix(123456789, 0)},
 		},
