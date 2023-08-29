@@ -19,8 +19,8 @@ type Transport struct {
 	// Base is the base RoundTripper used to make HTTP requests. If nil, then
 	// http.DefaultTransport is used
 	Base http.RoundTripper
-	// source supplies the token to use when signing a request
-	source TokenSource
+	// Source supplies the token to use when signing a request
+	Source TokenSource
 	// Auther adds OAuth1 Authorization headers to requests
 	Auther Auther
 }
@@ -28,10 +28,10 @@ type Transport struct {
 // RoundTrip authorizes the request with a signed OAuth1 Authorization header
 // using the auther and TokenSource.
 func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
-	if t.source == nil {
+	if t.Source == nil {
 		return nil, fmt.Errorf("oauth1: Transport's source is nil")
 	}
-	accessToken, err := t.source.Token()
+	accessToken, err := t.Source.Token()
 	if err != nil {
 		return nil, err
 	}

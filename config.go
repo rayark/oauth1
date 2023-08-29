@@ -52,7 +52,7 @@ func (c *Config) Client(ctx context.Context, t *Token) *http.Client {
 func NewClient(ctx context.Context, config *Config, token *Token) *http.Client {
 	transport := &Transport{
 		Base:   contextTransport(ctx),
-		source: StaticTokenSource(token),
+		Source: StaticTokenSource(token),
 		Auther: NewDefaultAuther(config),
 	}
 	return &http.Client{Transport: transport}

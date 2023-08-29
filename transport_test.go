@@ -41,7 +41,7 @@ func TestTransport(t *testing.T) {
 		clock:  &fixedClock{time.Unix(123456789, 0)},
 	}
 	tr := &Transport{
-		source: StaticTokenSource(NewToken(expectedToken, "some_secret")),
+		Source: StaticTokenSource(NewToken(expectedToken, "some_secret")),
 		Auther: auther,
 	}
 	client := &http.Client{Transport: tr}
@@ -69,7 +69,7 @@ func TestTransport_customBaseTransport(t *testing.T) {
 
 func TestTransport_nilSource(t *testing.T) {
 	tr := &Transport{
-		source: nil,
+		Source: nil,
 		Auther: &DefaultAuther{
 			config: &Config{Noncer: &fixedNoncer{"any_nonce"}},
 			clock:  &fixedClock{time.Unix(123456789, 0)},
@@ -85,7 +85,7 @@ func TestTransport_nilSource(t *testing.T) {
 
 func TestTransport_emptySource(t *testing.T) {
 	tr := &Transport{
-		source: StaticTokenSource(nil),
+		Source: StaticTokenSource(nil),
 		Auther: &DefaultAuther{
 			config: &Config{Noncer: &fixedNoncer{"any_nonce"}},
 			clock:  &fixedClock{time.Unix(123456789, 0)},
@@ -101,7 +101,7 @@ func TestTransport_emptySource(t *testing.T) {
 
 func TestTransport_nilAuther(t *testing.T) {
 	tr := &Transport{
-		source: StaticTokenSource(&Token{}),
+		Source: StaticTokenSource(&Token{}),
 		Auther: nil,
 	}
 	client := &http.Client{Transport: tr}
