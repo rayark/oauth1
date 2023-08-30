@@ -35,7 +35,7 @@ func NewTransport(baseRoundTripper http.RoundTripper, source TokenSource, auther
 	return t, nil
 }
 
-// NewTransport returns a new Transport without checking whether there is an error
+// newTransport returns a new Transport without checking whether there is an error
 func newTransport(baseRoundTripper http.RoundTripper, source TokenSource, auther Auther) *Transport {
 	return &Transport{
 		Base:   baseRoundTripper,

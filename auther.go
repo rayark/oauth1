@@ -194,7 +194,7 @@ func sortParameters(params map[string]string, format string) []string {
 	return pairs
 }
 
-// CollectParameters collects request parameters from the request query, OAuth
+// collectParameters collects request parameters from the request query, OAuth
 // parameters (which should exclude oauth_signature), and the request body
 // provided the body is single part, form encoded, and the form content type
 // header is set. The returned map of collected parameter keys and values
