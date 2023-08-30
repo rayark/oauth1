@@ -78,7 +78,7 @@ func TestNewTransport(t *testing.T) {
 		},
 		{
 			description: "custom base transport",
-			base:        nil,
+			base:        &http.Transport{},
 			source:      source,
 			auther:      auther,
 			errMsg:      "",
