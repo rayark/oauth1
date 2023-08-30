@@ -50,23 +50,16 @@ func TestTransport(t *testing.T) {
 }
 
 func TestNewTransport(t *testing.T) {
-	const (
-		expectedToken           = "access_token"
-		expectedConsumerKey     = "consumer_key"
-		expectedNonce           = "some_nonce"
-		expectedSignatureMethod = "HMAC-SHA1"
-		expectedTimestamp       = "123456789"
-	)
 	config := &Config{
-		ConsumerKey:    expectedConsumerKey,
+		ConsumerKey:    "consumer_key",
 		ConsumerSecret: "consumer_secret",
-		Noncer:         &fixedNoncer{expectedNonce},
+		Noncer:         &fixedNoncer{"some_nonce"},
 	}
 	auther := &DefaultAuther{
 		config: config,
 		clock:  &fixedClock{time.Unix(123456789, 0)},
 	}
-	source := StaticTokenSource(NewToken(expectedToken, "some_secret"))
+	source := StaticTokenSource(NewToken("access_token", "some_secret"))
 
 	type testCase struct {
 		description string
