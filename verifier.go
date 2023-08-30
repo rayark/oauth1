@@ -156,7 +156,7 @@ type HMACVerifier struct {
 // Default signer is HMAC-SHA1.
 func NewHMACVerifier(c *Config, tokenSecret string) *HMACVerifier {
 	return &HMACVerifier{
-		newAuther(c).signer(),
+		NewDefaultAuther(c).signer(),
 		tokenSecret,
 	}
 }
@@ -180,9 +180,10 @@ func (v *HMACVerifier) Verify(baseString, actualSignature string) error {
 }
 
 // collectRequestParameters collects request parameters from
-//   1. the request query,
-//   2. the request body provided the body is single part & form encoded & form content type header is set,
-//   3. and authorization header.
+//  1. the request query,
+//  2. the request body provided the body is single part & form encoded & form content type header is set,
+//  3. and authorization header.
+//
 // The returned map of collected parameter keys and values follow RFC 5849 3.4.1.3,
 // except duplicate parameters are not supported.
 func collectRequestParameters(req *http.Request) (map[string]string, string, error) {

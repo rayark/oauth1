@@ -50,11 +50,7 @@ func (c *Config) Client(ctx context.Context, t *Token) *http.Client {
 
 // NewClient returns a new http Client which signs requests via OAuth1.
 func NewClient(ctx context.Context, config *Config, token *Token) *http.Client {
-	transport := &Transport{
-		Base:   contextTransport(ctx),
-		source: StaticTokenSource(token),
-		auther: newAuther(config),
-	}
+	transport := newTransport(contextTransport(ctx), StaticTokenSource(token), NewDefaultAuther(config))
 	return &http.Client{Transport: transport}
 }
 
@@ -69,7 +65,7 @@ func (c *Config) RequestToken() (requestToken, requestSecret string, err error) 
 	if err != nil {
 		return "", "", err
 	}
-	err = newAuther(c).setRequestTokenAuthHeader(req)
+	err = NewDefaultAuther(c).setRequestTokenAuthHeader(req)
 	if err != nil {
 		return "", "", err
 	}
@@ -148,7 +144,7 @@ func (c *Config) AccessToken(requestToken, requestSecret, verifier string) (acce
 	if err != nil {
 		return "", "", err
 	}
-	err = newAuther(c).setAccessTokenAuthHeader(req, requestToken, requestSecret, verifier)
+	err = NewDefaultAuther(c).setAccessTokenAuthHeader(req, requestToken, requestSecret, verifier)
 	if err != nil {
 		return "", "", err
 	}
