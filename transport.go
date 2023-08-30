@@ -21,7 +21,7 @@ type Transport struct {
 	Base http.RoundTripper
 	// source supplies the token to use when signing a request
 	source TokenSource
-	// Auther adds OAuth1 Authorization headers to requests
+	// auther adds OAuth1 Authorization headers to requests
 	auther Auther
 }
 
