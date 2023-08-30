@@ -40,10 +40,7 @@ func TestTransport(t *testing.T) {
 		config: config,
 		clock:  &fixedClock{time.Unix(123456789, 0)},
 	}
-	tr := &Transport{
-		Source: StaticTokenSource(NewToken(expectedToken, "some_secret")),
-		Auther: auther,
-	}
+	tr := newTransport(nil, StaticTokenSource(NewToken(expectedToken, "some_secret")), auther)
 	client := &http.Client{Transport: tr}
 
 	req, err := http.NewRequest("GET", server.URL, nil)
@@ -52,13 +49,90 @@ func TestTransport(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestNewTransport(t *testing.T) {
+	const (
+		expectedToken           = "access_token"
+		expectedConsumerKey     = "consumer_key"
+		expectedNonce           = "some_nonce"
+		expectedSignatureMethod = "HMAC-SHA1"
+		expectedTimestamp       = "123456789"
+	)
+	config := &Config{
+		ConsumerKey:    expectedConsumerKey,
+		ConsumerSecret: "consumer_secret",
+		Noncer:         &fixedNoncer{expectedNonce},
+	}
+	auther := &DefaultAuther{
+		config: config,
+		clock:  &fixedClock{time.Unix(123456789, 0)},
+	}
+	source := StaticTokenSource(NewToken(expectedToken, "some_secret"))
+
+	type testCase struct {
+		description string
+		base        http.RoundTripper
+		source      TokenSource
+		auther      Auther
+		errMsg      string
+	}
+	for _, tc := range []testCase{
+		{
+			description: "default base transport",
+			base:        nil,
+			source:      source,
+			auther:      auther,
+			errMsg:      "",
+		},
+		{
+			description: "custom base transport",
+			base:        nil,
+			source:      source,
+			auther:      auther,
+			errMsg:      "",
+		},
+		{
+			description: "nil source",
+			base:        nil,
+			source:      nil,
+			auther:      auther,
+			errMsg:      "oauth1: Transport's source is nil",
+		},
+		{
+			description: "empty source",
+			base:        nil,
+			source:      StaticTokenSource(nil),
+			auther:      auther,
+			errMsg:      "oauth1: Token is nil",
+		},
+		{
+			description: "nil auther",
+			base:        nil,
+			source:      source,
+			auther:      nil,
+			errMsg:      "oauth1: Transport's auther is nil",
+		},
+	} {
+		tr, err := NewTransport(tc.base, tc.source, tc.auther)
+		if tc.errMsg == "" {
+			assert.Nil(t, err)
+			if tc.base == nil {
+				assert.Equal(t, http.DefaultTransport, tr.base())
+			} else {
+				assert.Equal(t, tc.base, tr.base())
+			}
+		} else {
+			assert.Contains(t, err.Error(), tc.errMsg)
+			assert.Nil(t, tr)
+		}
+	}
+}
+
 func TestTransport_defaultBaseTransport(t *testing.T) {
 	tr := &Transport{
 		Base: nil,
 	}
 	assert.Equal(t, http.DefaultTransport, tr.base())
 }
-
 func TestTransport_customBaseTransport(t *testing.T) {
 	expected := &http.Transport{}
 	tr := &Transport{
@@ -68,13 +142,10 @@ func TestTransport_customBaseTransport(t *testing.T) {
 }
 
 func TestTransport_nilSource(t *testing.T) {
-	tr := &Transport{
-		Source: nil,
-		Auther: &DefaultAuther{
-			config: &Config{Noncer: &fixedNoncer{"any_nonce"}},
-			clock:  &fixedClock{time.Unix(123456789, 0)},
-		},
-	}
+	tr := newTransport(nil, nil, &DefaultAuther{
+		config: &Config{Noncer: &fixedNoncer{"any_nonce"}},
+		clock:  &fixedClock{time.Unix(123456789, 0)},
+	})
 	client := &http.Client{Transport: tr}
 	resp, err := client.Get("http://example.com")
 	assert.Nil(t, resp)
@@ -84,13 +155,10 @@ func TestTransport_nilSource(t *testing.T) {
 }
 
 func TestTransport_emptySource(t *testing.T) {
-	tr := &Transport{
-		Source: StaticTokenSource(nil),
-		Auther: &DefaultAuther{
-			config: &Config{Noncer: &fixedNoncer{"any_nonce"}},
-			clock:  &fixedClock{time.Unix(123456789, 0)},
-		},
-	}
+	tr := newTransport(nil, StaticTokenSource(nil), &DefaultAuther{
+		config: &Config{Noncer: &fixedNoncer{"any_nonce"}},
+		clock:  &fixedClock{time.Unix(123456789, 0)},
+	})
 	client := &http.Client{Transport: tr}
 	resp, err := client.Get("http://example.com")
 	assert.Nil(t, resp)
@@ -100,10 +168,7 @@ func TestTransport_emptySource(t *testing.T) {
 }
 
 func TestTransport_nilAuther(t *testing.T) {
-	tr := &Transport{
-		Source: StaticTokenSource(&Token{}),
-		Auther: nil,
-	}
+	tr := newTransport(nil, StaticTokenSource(&Token{}), nil)
 	client := &http.Client{Transport: tr}
 	resp, err := client.Get("http://example.com")
 	assert.Nil(t, resp)

@@ -19,28 +19,45 @@ type Transport struct {
 	// Base is the base RoundTripper used to make HTTP requests. If nil, then
 	// http.DefaultTransport is used
 	Base http.RoundTripper
-	// Source supplies the token to use when signing a request
-	Source TokenSource
+	// source supplies the token to use when signing a request
+	source TokenSource
 	// Auther adds OAuth1 Authorization headers to requests
-	Auther Auther
+	auther Auther
+}
+
+// NewTransport returns a new Transport and an error
+func NewTransport(baseRoundTripper http.RoundTripper, source TokenSource, auther Auther) (*Transport, error) {
+	t := newTransport(baseRoundTripper, source, auther)
+	err := t.checkValid()
+	if err != nil {
+		return nil, err
+	}
+	return t, nil
+}
+
+// NewTransport returns a new Transport without checking whether there is an error
+func newTransport(baseRoundTripper http.RoundTripper, source TokenSource, auther Auther) *Transport {
+	return &Transport{
+		Base:   baseRoundTripper,
+		source: source,
+		auther: auther,
+	}
 }
 
 // RoundTrip authorizes the request with a signed OAuth1 Authorization header
 // using the auther and TokenSource.
 func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
-	if t.Source == nil {
-		return nil, fmt.Errorf("oauth1: Transport's source is nil")
-	}
-	accessToken, err := t.Source.Token()
+	err := t.checkValid()
 	if err != nil {
 		return nil, err
 	}
-	if t.Auther == nil {
-		return nil, fmt.Errorf("oauth1: Transport's auther is nil")
+	accessToken, err := t.source.Token()
+	if err != nil {
+		return nil, err
 	}
 	// RoundTripper should not modify the given request, clone it
 	req2 := cloneRequest(req)
-	err = t.Auther.SetRequestAuthHeader(req2, accessToken)
+	err = t.auther.SetRequestAuthHeader(req2, accessToken)
 	if err != nil {
 		return nil, err
 	}
@@ -66,4 +83,18 @@ func cloneRequest(req *http.Request) *http.Request {
 		r2.Header[k] = append([]string(nil), s...)
 	}
 	return r2
+}
+
+func (t *Transport) checkValid() error {
+	if t.source == nil {
+		return fmt.Errorf("oauth1: Transport's source is nil")
+	}
+	if t.auther == nil {
+		return fmt.Errorf("oauth1: Transport's auther is nil")
+	}
+	_, err := t.source.Token()
+	if err != nil {
+		return err
+	}
+	return nil
 }
